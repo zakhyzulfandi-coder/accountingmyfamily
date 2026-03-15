@@ -3,21 +3,16 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-  <title>Keuangan Keularga</title>
+  <title>Keuangan Keluarga</title>
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/zakhyzulfandi-coder/accountingmyfamily/refs/heads/main/family1.png">
-
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon"
-        href="https://raw.githubusercontent.com/zakhyzulfandi-coder/accountingmyfamily/refs/heads/main/family1.png">
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/zakhyzulfandi-coder/accountingmyfamily/refs/heads/main/family1.png">
   <meta name="theme-color" content="#003D79">
 
   <style>
     /* ===== LAYOUT DASAR ===== */
-
     html,
     body {
       margin: 0;
@@ -30,8 +25,8 @@
     }
 
     /* ===== CONTAINER APLIKASI ===== */
-
     .iframe-container {
+      position: relative; /* Penting agar loader menempel di dalam container ini */
       width: 100%;
       height: 100vh;
       overflow: hidden;
@@ -45,8 +40,45 @@
       border: none;
     }
 
-    /* ===== OVERLAY INSTALL ===== */
+    /* ===== CUSTOM LOADER (TAMBAHAN BARU) ===== */
+    #customLoader {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #eee; /* Warna background sama dengan body */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10; /* Berada di atas iframe */
+      transition: opacity 0.5s ease; /* Efek memudar saat menghilang */
+    }
 
+    /* Animasi Lingkaran Berputar */
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #ccc;
+      border-top-color: #003D79;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loader-text {
+      color: #003D79;
+      font-family: sans-serif;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* ===== OVERLAY INSTALL ===== */
     #overlay {
       display: none;
       position: fixed;
@@ -84,7 +116,6 @@
       font-size: 16px;
       margin-top: 15px;
       width: 100%;
-      /* PERBAIKAN: Tombol selalu standby (display: block) */
       display: block; 
     }
 
@@ -102,10 +133,17 @@
 <body>
 
   <div class="iframe-container" id="appContainer">
+    
+    <div id="customLoader">
+      <div class="spinner"></div>
+      <div class="loader-text">Menyiapkan Sistem...</div>
+    </div>
+
     <iframe
       id="app"
       src="https://script.google.com/a/macros/mutiarailmu.sch.id/s/AKfycbx1Z3Qw065Ea7TZAEIxxiWz-oGQZECWuVxnvuzm3Azju5IU6wu5ZeCBQ1YkOcCx3TeS7g/exec"
       scrolling="yes"
+      onload="hideLoader()" 
       allowfullscreen
       webkitallowfullscreen
       mozallowfullscreen
@@ -114,34 +152,34 @@
   </div>
 
   <div id="overlay">
-
     <div id="installPopUp">
-
-      <p id="popupTitle"
-         style="margin:0 0 10px 0;color:#003D79;font-weight:bold;font-size:20px;">
+      <p id="popupTitle" style="margin:0 0 10px 0;color:#003D79;font-weight:bold;font-size:20px;">
         My Keuangan Keluarga
       </p>
-
-      <p id="popupDesc"
-         style="margin:0 0 15px 0;color:#555;font-size:14px;line-height:1.5;">
+      <p id="popupDesc" style="margin:0 0 15px 0;color:#555;font-size:14px;line-height:1.5;">
         Memuat sistem...
       </p>
-
-      <button id="btnInstall">
-        Install
-      </button>
-
-      <p id="resetLink">
-        Saya sudah menghapus aplikasi (Install Ulang)
-      </p>
-
+      <button id="btnInstall">Install</button>
+      <p id="resetLink">Saya sudah menghapus aplikasi (Install Ulang)</p>
     </div>
   </div>
 
   <script>
+    /* ===== FUNGSI UNTUK MENGHILANGKAN LOADER (TAMBAHAN BARU) ===== */
+    function hideLoader() {
+      const loader = document.getElementById('customLoader');
+      if (loader) {
+        // Beri sedikit jeda 0.5 detik agar lebih halus
+        setTimeout(() => {
+          loader.style.opacity = '0';
+          setTimeout(() => {
+            loader.style.display = 'none';
+          }, 500); // Sesuaikan dengan waktu transition di CSS
+        }, 500);
+      }
+    }
 
     /* ===== SERVICE WORKER ===== */
-
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/Rohis-Mutiara-Ilmu/sw.js')
@@ -150,9 +188,7 @@
     }
 
     /* ===== DOM ELEMENT ===== */
-
     let deferredPrompt;
-
     const appContainer = document.getElementById('appContainer');
     const overlay = document.getElementById('overlay');
     const btnInstall = document.getElementById('btnInstall');
@@ -161,61 +197,39 @@
     const resetLink = document.getElementById('resetLink');
 
     /* ===== DETEKSI DEVICE & STANDALONE ===== */
-
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
     const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
 
-    // Deteksi apakah sedang berjalan di aplikasi yang sudah diinstal (PWA)
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       window.navigator.standalone === true;
 
     /* ===== LOGIKA MODE APLIKASI ===== */
-
     if (!isStandalone) {
-      // JIKA DIBUKA DI BROWSER (GITHUB/WEB BIASA)
-            
-      appContainer.style.display = 'none'; // Sembunyikan iframe
-      overlay.style.display = 'block';     // Tampilkan overlay paksaan
+      appContainer.style.display = 'none'; 
+      overlay.style.display = 'block';     
 
-      // PERBAIKAN: Selalu tampilkan pesan instalasi dasar
       popupTitle.innerHTML = 'Install Diperlukan';
-      popupDesc.innerHTML =
-        'Aplikasi ini wajib diinstal ke perangkat Anda (HP/Laptop) untuk dapat digunakan. Klik tombol di bawah untuk menginstal. Apabila tidak muncul, silahkan klik titik tiga 3 di pojok kanan atas kemudian pilih install';
-
-      // PERBAIKAN: Tombol selalu standby
+      popupDesc.innerHTML = 'Aplikasi ini wajib diinstal ke perangkat Anda (HP/Laptop) untuk dapat digunakan. Klik tombol di bawah untuk menginstal. Apabila tidak muncul, silahkan klik titik tiga 3 di pojok kanan atas kemudian pilih install';
       btnInstall.style.display = 'block';
 
-      // Kita hapus pengecekan isInstalledFlag di sini agar tombol selalu muncul.
-      // Kita juga biarkan tombol muncul untuk iOS, meskipun tombol otomatisnya tidak berfungsi, 
-      // agar pengguna tahu aplikasi perlu diinstal.
-
     } else {
-      // JIKA DIBUKA DI APLIKASI YANG SUDAH DIINSTAL (STANDALONE)
-
       localStorage.setItem('pwa_installed', 'true');
-      overlay.style.display = 'none';       // Sembunyikan overlay
-      appContainer.style.display = 'block'; // Tampilkan iframe aplikasi
+      overlay.style.display = 'none';       
+      appContainer.style.display = 'block'; 
+      // Saat appContainer muncul, customLoader otomatis terlihat karena z-index
+      // Iframe di bawahnya sedang memuat. Saat selesai, onload memanggil hideLoader()
     }
 
-    /* ===== DETEKSI EVENT INSTALL (CHROME/ANDROID/DESKTOP) ===== */
-
+    /* ===== DETEKSI EVENT INSTALL ===== */
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-            
-      // PERBAIKAN: Jika prompt siap dan belum standalone
-      if (!isStandalone) {
-        // Tombol sudah standby karena CSS dan logika di atas, 
-        // kita tidak perlu menyembunyikan atau menampilkannya lagi di sini.
-      }
     });
 
     /* ===== TOMBOL INSTALL ===== */
-
     btnInstall.addEventListener('click', async () => {
       if (!deferredPrompt) {
-        // PERBAIKAN: Berikan pesan yang lebih informatif jika prompt belum siap
         alert('Sistem instalasi sedang disiapkan atau browser tidak mendukung tombol otomatis. Gunakan menu Install di browser Anda.');
         return;
       }
@@ -226,34 +240,29 @@
       if (outcome === 'accepted') {
         localStorage.setItem('pwa_installed', 'true');
         popupTitle.innerHTML = 'Instalasi Berhasil';
-        popupDesc.innerHTML =
-          'Silakan tutup browser ini dan buka aplikasi Keuangan Keluarga dari layar utama / desktop Anda.';
+        popupDesc.innerHTML = 'Silakan tutup browser ini dan buka aplikasi Keuangan Keluarga dari layar utama / desktop Anda.';
         btnInstall.style.display = 'none';
       }
       deferredPrompt = null;
     });
 
     /* ===== RESET INSTALL ===== */
-
     resetLink.addEventListener('click', () => {
       localStorage.removeItem('pwa_installed');
       location.reload();
     });
 
     /* ===== DETEKSI SELESAI INSTALL ===== */
-
     window.addEventListener('appinstalled', () => {
       localStorage.setItem('pwa_installed', 'true');
       if (!isStandalone) {
         popupTitle.innerHTML = 'Instalasi Selesai';
-        popupDesc.innerHTML =
-          'Silakan tutup browser ini dan buka aplikasi Keuangan Keluarga dari layar utama / desktop Anda.';
+        popupDesc.innerHTML = 'Silakan tutup browser ini dan buka aplikasi Keuangan Keluarga dari layar utama / desktop Anda.';
         btnInstall.style.display = 'none';
       }
     });
 
-    /* ===== ANTI ZOOM & SCROLLING (TETAP DIPERTAHANKAN) ===== */
-
+    /* ===== ANTI ZOOM & SCROLLING ===== */
     document.addEventListener('wheel', function (e) {
       if (e.ctrlKey) {
         e.preventDefault();
@@ -261,12 +270,7 @@
     }, { passive: false });
 
     document.addEventListener('keydown', function (e) {
-      if (e.ctrlKey && (
-        e.key === '+' ||
-        e.key === '-' ||
-        e.key === '=' ||
-        e.key === '0'
-      )) {
+      if (e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '=' || e.key === '0')) {
         e.preventDefault();
       }
     });
@@ -287,5 +291,4 @@
   </script>
 
 </body>
-
 </html>
