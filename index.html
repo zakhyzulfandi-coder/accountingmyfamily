@@ -166,18 +166,22 @@
 
   <script>
     /* ===== FUNGSI UNTUK MENGHILANGKAN LOADER (TAMBAHAN BARU) ===== */
-    function hideLoader() {
-      const loader = document.getElementById('customLoader');
-      if (loader) {
-        // Beri sedikit jeda 0.5 detik agar lebih halus
-        setTimeout(() => {
-          loader.style.opacity = '0';
-          setTimeout(() => {
-            loader.style.display = 'none';
-          }, 500); // Sesuaikan dengan waktu transition di CSS
-        }, 500);
-      }
-    }
+    /* ===== FUNGSI UNTUK MENGHILANGKAN LOADER ===== */
+function hideLoader() {
+  const loader = document.getElementById('customLoader');
+  if (loader) {
+    // TAHAN LOADER LEBIH LAMA: 
+    // Beri jeda 3.5 detik (3500 milidetik) agar garis tipis Google sempat selesai
+    setTimeout(() => {
+      loader.style.opacity = '0'; // Mulai memudar
+      
+      setTimeout(() => {
+        loader.style.display = 'none'; // Hilangkan sepenuhnya
+      }, 500); 
+      
+    }, 3500); // <--- Kamu bisa mengubah angka 3500 ini. Jika masih terlihat, naikkan jadi 4000 atau 5000.
+  }
+}
 
     /* ===== SERVICE WORKER ===== */
     if ('serviceWorker' in navigator) {
