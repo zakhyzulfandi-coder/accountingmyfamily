@@ -7,12 +7,12 @@
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <title>My Family</title>
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/zakhyzulfandi-coder/accountingmyfamily/refs/heads/main/family1.png">
+  <title>Aplikasi Rohis Mutiara Ilmu</title>
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/zakhyzulfandi-coder/Rohis-Mutiara-Ilmu/main/logorohis.jpg">
 
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon"
-        href="https://raw.githubusercontent.com/zakhyzulfandi-coder/accountingmyfamily/refs/heads/main/family1.png">
+        href="https://raw.githubusercontent.com/zakhyzulfandi-coder/Rohis-Mutiara-Ilmu/main/logorohis.jpg">
   <meta name="theme-color" content="#558C3E">
 
   <style>
@@ -84,6 +84,8 @@
       font-size: 16px;
       margin-top: 15px;
       width: 100%;
+      /* PERBAIKAN: Tombol selalu standby (display: block) */
+      display: block; 
     }
 
     #resetLink {
@@ -117,7 +119,7 @@
 
       <p id="popupTitle"
          style="margin:0 0 10px 0;color:#558C3E;font-weight:bold;font-size:20px;">
-        Aplikasi Keuangan Keluarga
+        Aplikasi Rohis Ikhwah
       </p>
 
       <p id="popupDesc"
@@ -125,7 +127,7 @@
         Memuat sistem...
       </p>
 
-      <button id="btnInstall" style="display:none;">
+      <button id="btnInstall">
         Install
       </button>
 
@@ -168,45 +170,31 @@
       window.matchMedia('(display-mode: standalone)').matches ||
       window.navigator.standalone === true;
 
-    const isInstalledFlag =
-      localStorage.getItem('pwa_installed') === 'true';
-
     /* ===== LOGIKA MODE APLIKASI ===== */
 
     if (!isStandalone) {
       // JIKA DIBUKA DI BROWSER (GITHUB/WEB BIASA)
-      
+            
       appContainer.style.display = 'none'; // Sembunyikan iframe
-      overlay.style.display = 'block';     // Tampilkan overlay paksaan
+      overlay.style.display = 'block';     // Tampilkan overlay paksaan
 
-      if (isInstalledFlag) {
-        // Jika sudah ditandai terinstal tapi dibuka di browser
-        popupTitle.innerHTML = 'Aplikasi Telah Diinstal';
-        popupDesc.innerHTML =
-          'Akses melalui browser web tidak diizinkan. Silakan buka aplikasi Keuangan Keluarga yang telah diinstal di Desktop atau Home Screen HP Anda.';
-        
-        btnInstall.style.display = 'none';
-        resetLink.style.display = 'block';
-      } else {
-        // Jika belum terinstal
-        popupTitle.innerHTML = 'Install Diperlukan';
-        
-        if (isIOS) {
-          popupDesc.innerHTML =
-            'Untuk pengguna iOS: Tekan ikon <b>Share</b> di menu bawah browser lalu pilih <b>Add to Home Screen</b>.';
-          btnInstall.style.display = 'none'; // iOS tidak mendukung tombol install JS
-        } else {
-          popupDesc.innerHTML =
-            'Aplikasi ini wajib diinstal ke perangkat Anda (HP/Laptop) untuk dapat digunakan. Menunggu tombol instalasi...';
-          // Tombol akan dimunculkan oleh event 'beforeinstallprompt' di bawah
-        }
-      }
+      // PERBAIKAN: Selalu tampilkan pesan instalasi dasar
+      popupTitle.innerHTML = 'Install Diperlukan';
+      popupDesc.innerHTML =
+        'Aplikasi ini wajib diinstal ke perangkat Anda (HP/Laptop) untuk dapat digunakan. Klik tombol di bawah untuk menginstal.';
+
+      // PERBAIKAN: Tombol selalu standby
+      btnInstall.style.display = 'block';
+
+      // Kita hapus pengecekan isInstalledFlag di sini agar tombol selalu muncul.
+      // Kita juga biarkan tombol muncul untuk iOS, meskipun tombol otomatisnya tidak berfungsi, 
+      // agar pengguna tahu aplikasi perlu diinstal.
 
     } else {
       // JIKA DIBUKA DI APLIKASI YANG SUDAH DIINSTAL (STANDALONE)
 
       localStorage.setItem('pwa_installed', 'true');
-      overlay.style.display = 'none';       // Sembunyikan overlay
+      overlay.style.display = 'none';       // Sembunyikan overlay
       appContainer.style.display = 'block'; // Tampilkan iframe aplikasi
     }
 
@@ -215,13 +203,11 @@
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      
-      // Jika prompt siap dan belum standalone
-      if (!isStandalone && !isInstalledFlag) {
-        popupTitle.innerHTML = 'Install Diperlukan';
-        popupDesc.innerHTML =
-          'Klik tombol di bawah untuk menginstal aplikasi ini ke Laptop/PC atau HP Anda agar dapat digunakan.';
-        btnInstall.style.display = 'block';
+            
+      // PERBAIKAN: Jika prompt siap dan belum standalone
+      if (!isStandalone) {
+        // Tombol sudah standby karena CSS dan logika di atas, 
+        // kita tidak perlu menyembunyikan atau menampilkannya lagi di sini.
       }
     });
 
@@ -229,6 +215,7 @@
 
     btnInstall.addEventListener('click', async () => {
       if (!deferredPrompt) {
+        // PERBAIKAN: Berikan pesan yang lebih informatif jika prompt belum siap
         alert('Sistem instalasi sedang disiapkan atau browser tidak mendukung tombol otomatis. Gunakan menu Install di browser Anda.');
         return;
       }
@@ -240,7 +227,7 @@
         localStorage.setItem('pwa_installed', 'true');
         popupTitle.innerHTML = 'Instalasi Berhasil';
         popupDesc.innerHTML =
-          'Silakan tutup browser ini dan buka aplikasi Keuangan Keluarga anda dari layar utama / desktop Anda.';
+          'Silakan tutup browser ini dan buka aplikasi Rohis Ikhwah dari layar utama / desktop Anda.';
         btnInstall.style.display = 'none';
       }
       deferredPrompt = null;
@@ -260,7 +247,7 @@
       if (!isStandalone) {
         popupTitle.innerHTML = 'Instalasi Selesai';
         popupDesc.innerHTML =
-          'Silakan tutup browser ini dan buka aplikasi Keuangan Keluarga anda dari layar utama / desktop Anda.';
+          'Silakan tutup browser ini dan buka aplikasi Rohis Ikhwah dari layar utama / desktop Anda.';
         btnInstall.style.display = 'none';
       }
     });
